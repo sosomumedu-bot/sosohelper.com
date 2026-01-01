@@ -1,0 +1,147 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  HELPER
+  EMPLOYER
+}
+
+enum BookmarkCategory {
+  CONTACTED
+  UNDER_REVIEW
+  FAVORITE
+}
+
+model User {
+  id                 String   @id @default(uuid())
+  role               UserRole
+  email              String   @unique
+  passwordHash       String
+  whatsapp           String?
+  languagePreference String   @default("en")
+
+  onlineStatus Boolean @default(false)
+  lastActive   DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  helperProfile HelperProfile?
+  employerJobs  EmployerJob[]
+
+  bookmarksFromEmployer Bookmark[] @relation("BookmarksFromEmployer")
+  bookmarksToHelper     Bookmark[] @relation("BookmarksToHelper")
+}
+
+model HelperProfile {
+  id String @id @default(uuid())
+
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  photoUrl         String
+  countryOfOrigin  String
+  ageRange         String
+  experienceYears  String
+  familySituation   String
+
+  experienceDetails HelperProfileExperienceDetail[]
+  workedCountries   HelperProfileWorkedCountry[]
+  personalityTraits HelperProfilePersonalityTrait[]
+
+  contractEndDate     DateTime
+  availableStartDate  DateTime
+  previousContractType String
+
+  bio String?
+
+  recommendationLetterUrl String?
+  facebookProfileLink     String?
+  cookingPhotosLink       String?
+  videosLink              String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([countryOfOrigin])
+  @@index([ageRange])
+  @@index([experienceYears])
+  @@index([availableStartDate])
+}
+
+model HelperProfileExperienceDetail {
+  id        String @id @default(uuid())
+  profileId String
+  value     String
+
+  profile HelperProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@index([value])
+  @@unique([profileId, value])
+}
+
+model HelperProfileWorkedCountry {
+  id        String @id @default(uuid())
+  profileId String
+  value     String
+
+  profile HelperProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@index([value])
+  @@unique([profileId, value])
+}
+
+model HelperProfilePersonalityTrait {
+  id        String @id @default(uuid())
+  profileId String
+  value     String
+
+  profile HelperProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@index([value])
+  @@unique([profileId, value])
+}
+
+model EmployerJob {
+  id String @id @default(uuid())
+
+  userId String
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  familyComposition Json
+  location          String
+  houseSize         String
+  separateRoom      Boolean
+  weeklyOffDays     Json
+  tasks             Json
+  whatsapp          String
+  jobDescription    String?
+
+  createdAt DateTime @default(now())
+
+  @@index([location])
+  @@index([createdAt])
+}
+
+model Bookmark {
+  id String @id @default(uuid())
+
+  employerId String
+  helperId   String
+
+  employer User @relation("BookmarksFromEmployer", fields: [employerId], references: [id], onDelete: Cascade)
+  helper   User @relation("BookmarksToHelper", fields: [helperId], references: [id], onDelete: Cascade)
+
+  category BookmarkCategory
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([employerId, helperId])
+  @@index([category])
+}

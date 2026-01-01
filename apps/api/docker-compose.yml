@@ -1,0 +1,13 @@
+services:
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: sosohelper
+      POSTGRES_PASSWORD: sosohelper
+      POSTGRES_DB: sosohelper
+    ports:
+      - "5432:5432"
+    volumes:
+      - sosohelper_pg:/var/lib/postgresql/data
+volumes:
+  sosohelper_pg:

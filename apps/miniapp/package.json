@@ -1,0 +1,26 @@
+{
+  "name": "@sosohelper/miniapp",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev:weapp": "taro build --type weapp --watch",
+    "build:weapp": "taro build --type weapp",
+    "lint": "echo \"(miniapp) add eslint if needed\"",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "build": "pnpm build:weapp"
+  },
+  "dependencies": {
+    "@tarojs/components": "^4.0.6",
+    "@tarojs/helper": "^4.0.6",
+    "@tarojs/plugin-framework-react": "^4.0.6",
+    "@tarojs/react": "^4.0.6",
+    "@tarojs/runtime": "^4.0.6",
+    "@tarojs/taro": "^4.0.6",
+    "react": "^18.3.1",
+    "@sosohelper/shared": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.3",
+    "typescript": "^5.5.4"
+  }
+}

@@ -1,0 +1,21 @@
+import Link from "next/link";
+
+export default function Page() {
+  return (
+    <main className="space-y-4">
+      <h1 className="text-xl font-bold">SosoHelper</h1>
+      <p className="text-sm text-slate-700">
+        MVP screens: helper profile form and employer helper search. Auth tokens are pasted for now.
+      </p>
+
+      <div className="grid gap-3">
+        <Link className="rounded border px-4 py-3" href="/helper/profile">
+          Helper: Create / Edit Profile
+        </Link>
+        <Link className="rounded border px-4 py-3" href="/employer/search">
+          Employer: Search Helpers
+        </Link>
+      </div>
+    </main>
+  );
+}
