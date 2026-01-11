@@ -15,13 +15,15 @@ export function requireAuth(req: Request, res: Response, next: NextFunction) {
   if (!token) return sendProblem(res, 401, "Missing bearer token");
 
   try {
+    console.log("Verifying token with secret starting:", env.JWT_SECRET.slice(0, 5));
     const payload = jwt.verify(token, env.JWT_SECRET);
     const parsed = z
       .object({ sub: z.string().uuid(), role: z.enum(["HELPER", "EMPLOYER"]) })
       .parse(payload);
     (req as any).user = { id: parsed.sub, role: parsed.role } satisfies AuthUser;
     return next();
-  } catch {
+  } catch (e) {
+    console.error("Auth failed:", e);
     return sendProblem(res, 401, "Invalid token");
   }
 }

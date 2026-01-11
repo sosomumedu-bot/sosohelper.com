@@ -5,7 +5,7 @@ export default function Page() {
     <main className="space-y-4">
       <h1 className="text-xl font-bold">SosoHelper</h1>
       <p className="text-sm text-slate-700">
-        MVP screens: helper profile form and employer helper search. Auth tokens are pasted for now.
+        Connect foreign helpers with Hong Kong employers.
       </p>
 
       <div className="grid gap-3">
@@ -21,6 +21,12 @@ export default function Page() {
         </Link>
         <Link className="rounded border px-4 py-3" href="/employer/search">
           Employer: Search Helpers
+        </Link>
+        <Link className="rounded border px-4 py-3" href="/employer/jobs">
+          Employer: Post / Manage Jobs
+        </Link>
+        <Link className="rounded border px-4 py-3" href="/employer/bookmarks">
+          Employer: My Bookmarks
         </Link>
       </div>
     </main>

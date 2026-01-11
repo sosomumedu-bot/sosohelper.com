@@ -1,14 +1,18 @@
 import type { HelperProfileInput } from "@sosohelper/shared";
 
 export function HelperCard({
-  helper
+  helper,
+  isBookmarked,
+  onToggleBookmark
 }: {
   helper: { id: string; online: boolean; whatsapp: string | null; profile: any };
+  isBookmarked?: boolean;
+  onToggleBookmark?: () => void;
 }) {
   const p = helper.profile as HelperProfileInput & { id?: string };
 
   return (
-    <div className="rounded-lg border p-3">
+    <div className="rounded-lg border p-3 relative">
       <div className="flex items-start gap-3">
         <img
           src={p.photoUrl}
@@ -17,7 +21,7 @@ export function HelperCard({
           loading="lazy"
         />
         <div className="min-w-0 flex-1">
-          <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center justify-between gap-2 mr-6">
             <div className="truncate font-semibold">{p.countryOfOrigin}</div>
             <div className={helper.online ? "text-xs text-green-600" : "text-xs text-slate-500"}>
               {helper.online ? "Online" : "Offline"}
@@ -40,6 +44,20 @@ export function HelperCard({
             </a>
           </div>
         </div>
+
+        {onToggleBookmark && (
+          <button
+            onClick={onToggleBookmark}
+            className="absolute top-3 right-3 text-2xl leading-none focus:outline-none"
+            title={isBookmarked ? "Remove bookmark" : "Add bookmark"}
+          >
+            {isBookmarked ? (
+              <span className="text-yellow-500">★</span>
+            ) : (
+              <span className="text-slate-300 hover:text-yellow-400">☆</span>
+            )}
+          </button>
+        )}
       </div>
     </div>
   );

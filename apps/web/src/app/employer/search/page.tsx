@@ -26,6 +26,8 @@ export default function Page() {
   const [personalityTraits, setPersonalityTraits] = useState<string[]>([]);
   const [onlineOnly, setOnlineOnly] = useState(false);
   const [helpers, setHelpers] = useState<any[]>([]);
+  const [bookmarkedSet, setBookmarkedSet] = useState<Set<string>>(new Set());
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const query = useMemo(() => {
@@ -53,18 +55,75 @@ export default function Page() {
   useEffect(() => {
     if (token) {
       search();
+      loadBookmarks();
     }
   }, [token, query]); // Auto-search when token or filters change
 
-  async function search() {
+  async function loadBookmarks() {
+    try {
+      const r = await apiFetch<{ bookmarks: any[] }>("/employers/me/bookmarks", { token });
+      // bookmarks have { helperId }
+      const ids = new Set(r.bookmarks.map((b) => b.helperId));
+      setBookmarkedSet(ids);
+    } catch (e: any) {
+      console.error("Failed to load bookmarks", e);
+      if (e.message?.includes("401") || e.message?.includes("Unauthorized") || e.message?.includes("Invalid token")) {
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+        router.push("/auth/login");
+      }
+    }
+  }
+
+  async function toggleBookmark(helperId: string) {
     if (!token) return;
+    const isBookmarked = bookmarkedSet.has(helperId);
+    try {
+      // Optimistic update
+      setBookmarkedSet((prev) => {
+        const next = new Set(prev);
+        if (isBookmarked) next.delete(helperId);
+        else next.add(helperId);
+        return next;
+      });
+
+      if (isBookmarked) {
+        await apiFetch(`/employers/me/bookmarks/${helperId}`, { method: "DELETE", token });
+      } else {
+        await apiFetch("/employers/me/bookmarks", {
+          method: "PUT",
+          token,
+          body: { helperUserId: helperId, category: "Favorite" }
+        });
+      }
+    } catch (e) {
+      console.error("Failed to toggle bookmark", e);
+      // Revert on error? For MVP, ignore or could reload.
+    }
+  }
+
+  async function search() {
+    console.log("Search initiated. Token:", !!token, "Query:", query);
+    if (!token) {
+      console.log("No token, aborting search");
+      return;
+    }
+    setLoading(true);
     setError(null);
     try {
+      console.log("Fetching helpers...");
       const r = await apiFetch<{ helpers: any[] }>(`/helpers/search?${query}`, { token });
+      console.log("Helpers fetched:", r.helpers.length);
       setHelpers(r.helpers);
+      setLoading(false);
     } catch (e: any) {
-      if (e.message?.includes("401") || e.message?.includes("Unauthorized")) {
+      console.error("Search error:", e);
+      setLoading(false);
+      if (e.message?.includes("401") || e.message?.includes("Unauthorized") || e.message?.includes("Invalid token")) {
+         localStorage.removeItem("token");
+         localStorage.removeItem("user");
          router.push("/auth/login");
+         return;
       }
       setError(e?.message ?? "Search failed");
     }
@@ -169,9 +228,23 @@ export default function Page() {
       </div>
 
       <div className="space-y-3">
-        {helpers.map((h) => (
-          <HelperCard key={h.id} helper={h} />
-        ))}
+        {loading ? (
+          <div className="text-center py-8 text-slate-500">Loading helpers...</div>
+        ) : helpers.length === 0 ? (
+          <div className="rounded border border-dashed p-8 text-center text-slate-500">
+            <p>No helpers found matching your criteria.</p>
+            <p className="text-xs mt-1">Try adjusting the filters.</p>
+          </div>
+        ) : (
+          helpers.map((h) => (
+            <HelperCard
+              key={h.id}
+              helper={h}
+              isBookmarked={bookmarkedSet.has(h.id)}
+              onToggleBookmark={() => toggleBookmark(h.id)}
+            />
+          ))
+        )}
       </div>
     </main>
   );

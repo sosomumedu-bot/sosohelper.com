@@ -191,6 +191,7 @@ function parseStringArray(value: unknown): string[] | undefined {
 }
 
 helpersRouter.get("/search", requireAuth, requireRole("EMPLOYER"), async (req, res) => {
+  console.log("GET /search hit", req.query);
   const input = {
     countryOfOrigin: typeof req.query.countryOfOrigin === "string" ? req.query.countryOfOrigin : undefined,
     ageRange: typeof req.query.ageRange === "string" ? req.query.ageRange : undefined,
@@ -281,5 +282,6 @@ helpersRouter.get("/search", requireAuth, requireRole("EMPLOYER"), async (req, r
       profile: serializeHelperProfile(u.helperProfile as HelperProfileApi)
     }));
 
+  console.log("Search returning helpers count:", result.length);
   return res.json({ ok: true, helpers: result });
 });

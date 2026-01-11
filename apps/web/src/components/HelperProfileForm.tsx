@@ -16,7 +16,8 @@ import { useForm } from "react-hook-form";
 import type { z } from "zod";
 import { TranslateButton } from "./TranslateButton";
 import { apiFetch } from "@/lib/api";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 
 type FormData = z.infer<typeof helperProfileSchema>;
 
@@ -54,8 +55,41 @@ function CheckboxGroup({
 }
 
 export function HelperProfileForm() {
+  const router = useRouter();
   const [token, setToken] = useState<string>("");
   const [status, setStatus] = useState<string | null>(null);
+
+  useEffect(() => {
+    const t = localStorage.getItem("token");
+    if (!t) {
+      router.push("/auth/login");
+      return;
+    }
+    setToken(t);
+  }, [router]);
+
+  useEffect(() => {
+    if (!token) return;
+    // Load existing profile
+    apiFetch<{ profile: any }>("/helpers/me/profile", { token })
+      .then((res) => {
+        if (res.profile) {
+          // Merge defaults just in case
+          reset({ ...defaults, ...res.profile });
+        }
+      })
+      .catch((e) => {
+        if (e.message?.includes("401") || e.message?.includes("Unauthorized") || e.message?.includes("Invalid token")) {
+          // Token is invalid, clear it so user can login again
+          localStorage.removeItem("token");
+          localStorage.removeItem("user");
+          router.push("/auth/login");
+          return;
+        }
+        // Warning or ignore if 404 (not created yet)
+        console.warn("Failed to load profile", e);
+      });
+  }, [token, router]);
 
   const defaults: FormData = useMemo(
     () => ({
@@ -85,6 +119,7 @@ export function HelperProfileForm() {
     handleSubmit,
     watch,
     setValue,
+    reset,
     formState: { errors, isSubmitting }
   } = useForm<FormData>({
     resolver: zodResolver(helperProfileSchema),
@@ -110,16 +145,6 @@ export function HelperProfileForm() {
         }
       })}
     >
-      <div className="rounded border p-3">
-        <div className="text-sm font-semibold">Auth token</div>
-        <input
-          className="mt-2 w-full rounded border px-3 py-2"
-          value={token}
-          onChange={(e) => setToken(e.target.value)}
-          placeholder="Paste JWT from /auth/login"
-        />
-      </div>
-
       <div>
         <label className="text-sm font-semibold">Front-facing photo URL</label>
         <input className="mt-1 w-full rounded border px-3 py-2" {...register("photoUrl")} />
