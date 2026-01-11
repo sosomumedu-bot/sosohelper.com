@@ -42,9 +42,9 @@ app.use((err: any, _req: any, res: any, _next: any) => {
 const server = http.createServer(app);
 attachWebSocket(server);
 
-server.listen(env.PORT, () => {
+server.listen(env.PORT, "0.0.0.0", () => {
   // eslint-disable-next-line no-console
-  console.log(`API listening on http://localhost:${env.PORT}`);
+  console.log(`API listening on http://0.0.0.0:${env.PORT}`);
   // eslint-disable-next-line no-console
-  console.log(`WS listening on ws://localhost:${env.PORT}/ws`);
+  console.log(`WS listening on ws://0.0.0.0:${env.PORT}/ws`);
 });

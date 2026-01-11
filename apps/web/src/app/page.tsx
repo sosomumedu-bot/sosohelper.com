@@ -9,6 +9,13 @@ export default function Page() {
       </p>
 
       <div className="grid gap-3">
+        <Link className="rounded border px-4 py-3 bg-blue-600 text-white text-center font-medium" href="/auth/signup">
+          Get Started / Sign Up
+        </Link>
+        <Link className="rounded border px-4 py-3 text-center font-medium" href="/auth/login">
+          Log In
+        </Link>
+        <hr className="my-2" />
         <Link className="rounded border px-4 py-3" href="/helper/profile">
           Helper: Create / Edit Profile
         </Link>
