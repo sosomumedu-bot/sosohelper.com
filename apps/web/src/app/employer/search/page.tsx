@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import { apiFetch } from "@/lib/api";
 import {
   AGE_RANGES,
@@ -16,6 +17,7 @@ function toParamArray(v: string[]) {
 }
 
 export default function Page() {
+  const router = useRouter();
   const [token, setToken] = useState<string>("");
   const [countryOfOrigin, setCountryOfOrigin] = useState<string>("");
   const [ageRange, setAgeRange] = useState<string>("");
@@ -40,15 +42,30 @@ export default function Page() {
   }, [ageRange, countryOfOrigin, experienceDetails, experienceYears, onlineOnly, personalityTraits]);
 
   useEffect(() => {
-    // no auto-fetch without token
-  }, []);
+    const t = localStorage.getItem("token");
+    if (!t) {
+      router.push("/auth/login");
+      return;
+    }
+    setToken(t);
+  }, [router]);
+
+  useEffect(() => {
+    if (token) {
+      search();
+    }
+  }, [token, query]); // Auto-search when token or filters change
 
   async function search() {
+    if (!token) return;
     setError(null);
     try {
       const r = await apiFetch<{ helpers: any[] }>(`/helpers/search?${query}`, { token });
       setHelpers(r.helpers);
     } catch (e: any) {
+      if (e.message?.includes("401") || e.message?.includes("Unauthorized")) {
+         router.push("/auth/login");
+      }
       setError(e?.message ?? "Search failed");
     }
   }
@@ -60,16 +77,6 @@ export default function Page() {
   return (
     <main className="space-y-4">
       <h1 className="text-xl font-bold">Search Helpers</h1>
-
-      <div className="rounded border p-3">
-        <div className="text-sm font-semibold">Auth token</div>
-        <input
-          className="mt-2 w-full rounded border px-3 py-2"
-          value={token}
-          onChange={(e) => setToken(e.target.value)}
-          placeholder="Paste JWT from /auth/login (employer)"
-        />
-      </div>
 
       <div className="space-y-3 rounded border p-3">
         <div className="grid grid-cols-2 gap-3">
