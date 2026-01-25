@@ -27,6 +27,7 @@ authRouter.post("/signup", async (req, res) => {
   if (existing) return sendProblem(res, 409, "Email already registered");
 
   const passwordHash = await argon2.hash(password);
+  const now = new Date();
 
   const user = await prisma.user.create({
     data: {
@@ -34,12 +35,13 @@ authRouter.post("/signup", async (req, res) => {
       email,
       passwordHash,
       whatsapp: whatsapp ? encryptString(whatsapp) : null,
-      languagePreference: languagePreference || "en"
+      languagePreference: languagePreference || "en",
+      lastActive: now,
+      onlineStatus: true
     },
     select: { id: true, role: true }
   });
 
-  console.log("Signing token with secret starting:", env.JWT_SECRET.slice(0, 5));
   const token = jwt.sign({ role: user.role }, env.JWT_SECRET, { subject: user.id, expiresIn: "14d" });
   return res.json({ ok: true, token, user });
 });
@@ -60,7 +62,12 @@ authRouter.post("/login", async (req, res) => {
   const ok = await argon2.verify(user.passwordHash, password);
   if (!ok) return sendProblem(res, 401, "Invalid credentials");
 
-  console.log("Signing token with secret starting:", env.JWT_SECRET.slice(0, 5));
+  await prisma.user.update({
+    where: { id: user.id },
+    data: { lastActive: new Date(), onlineStatus: true },
+    select: { id: true }
+  });
+
   const token = jwt.sign({ role: user.role }, env.JWT_SECRET, { subject: user.id, expiresIn: "14d" });
   return res.json({ ok: true, token, user: { id: user.id, role: user.role } });
 });

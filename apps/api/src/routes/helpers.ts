@@ -192,6 +192,7 @@ function parseStringArray(value: unknown): string[] | undefined {
 
 helpersRouter.get("/search", requireAuth, requireRole("EMPLOYER"), async (req, res) => {
   console.log("GET /search hit", req.query);
+  const onlineThreshold = new Date(Date.now() - env.ONLINE_TTL_SECONDS * 1000);
   const input = {
     countryOfOrigin: typeof req.query.countryOfOrigin === "string" ? req.query.countryOfOrigin : undefined,
     ageRange: typeof req.query.ageRange === "string" ? req.query.ageRange : undefined,
@@ -231,7 +232,7 @@ helpersRouter.get("/search", requireAuth, requireRole("EMPLOYER"), async (req, r
   const users = (await prisma.user.findMany({
     where: {
       role: "HELPER",
-      ...(f.onlineOnly ? { onlineStatus: true } : {}),
+      ...(f.onlineOnly ? { lastActive: { gte: onlineThreshold } } : {}),
       helperProfile: {
         is: {
           ...(f.countryOfOrigin ? { countryOfOrigin: f.countryOfOrigin } : {}),
@@ -262,8 +263,8 @@ helpersRouter.get("/search", requireAuth, requireRole("EMPLOYER"), async (req, r
         }
       }
     },
-    // Sort by online first, then most recently active
-    orderBy: [{ onlineStatus: "desc" }, { lastActive: "desc" }, { updatedAt: "desc" }],
+    // Sort by lastActive (TTL-driven online), then stable by updatedAt
+    orderBy: [{ lastActive: "desc" }, { updatedAt: "desc" }],
     take: 100
   })) as unknown as HelperSearchRow[];
 

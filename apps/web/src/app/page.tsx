@@ -19,6 +19,9 @@ export default function Page() {
         <Link className="rounded border px-4 py-3" href="/helper/profile">
           Helper: Create / Edit Profile
         </Link>
+        <Link className="rounded border px-4 py-3" href="/helper/jobs">
+          Helper: Browse Jobs
+        </Link>
         <Link className="rounded border px-4 py-3" href="/employer/search">
           Employer: Search Helpers
         </Link>
