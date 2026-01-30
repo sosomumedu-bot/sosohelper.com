@@ -37,7 +37,7 @@ export function TranslateButton({
           }
         }}
       >
-        {loading ? "Translating…" : `Translate → ${target === "zh" ? "中文" : "English"}`}
+        {loading ? "Translating..." : `Translate -> ${target === "zh" ? "Chinese" : "English"}`}
       </button>
       {error ? <div className="text-xs text-red-600">{error}</div> : null}
     </div>

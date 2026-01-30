@@ -28,10 +28,10 @@ export function HelperCard({
             </div>
           </div>
           <div className="mt-1 text-sm text-slate-700">
-            Age: {p.ageRange} · Exp: {p.experienceYears}
+            Age: {p.ageRange} - Exp: {p.experienceYears}
           </div>
           <div className="mt-1 text-xs text-slate-600">
-            Skills: {p.experienceDetails.slice(0, 3).join(", ")}{p.experienceDetails.length > 3 ? "…" : ""}
+            Skills: {p.experienceDetails.slice(0, 3).join(", ")}{p.experienceDetails.length > 3 ? "..." : ""}
           </div>
           <div className="mt-2">
             <a
@@ -52,9 +52,9 @@ export function HelperCard({
             title={isBookmarked ? "Remove bookmark" : "Add bookmark"}
           >
             {isBookmarked ? (
-              <span className="text-yellow-500">★</span>
+              <span className="text-yellow-500">*</span>
             ) : (
-              <span className="text-slate-300 hover:text-yellow-400">☆</span>
+              <span className="text-slate-300 hover:text-yellow-400">+</span>
             )}
           </button>
         )}

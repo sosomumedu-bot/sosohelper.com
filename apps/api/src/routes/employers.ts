@@ -1,8 +1,11 @@
 import { Router } from "express";
 import { bookmarkSchema, employerJobSchema } from "@sosohelper/shared";
 import { prisma } from "../db";
+import { env } from "../env";
 import { getAuthUser, requireAuth, requireRole, sendProblem } from "./utils";
-import { encryptString } from "../crypto";
+import { decryptString, encryptString } from "../crypto";
+import { isOnline } from "./presence";
+import { HelperProfileApi, serializeHelperProfile } from "./serializers";
 
 export const employersRouter = Router();
 
@@ -62,14 +65,62 @@ employersRouter.put("/me/bookmarks", requireAuth, requireRole("EMPLOYER"), async
 
 employersRouter.get("/me/bookmarks", requireAuth, requireRole("EMPLOYER"), async (req, res) => {
   const user = getAuthUser(req);
-  const bookmarks = await prisma.bookmark.findMany({
+  type BookmarkRow = {
+    helperId: string;
+    category: string;
+    helper: {
+      id: string;
+      lastActive: Date | null;
+      whatsapp: string | null;
+      helperProfile: HelperProfileApi | null;
+    };
+  };
+
+  const bookmarks = (await prisma.bookmark.findMany({
     where: { employerId: user.id },
     include: {
-      helper: { select: { id: true, helperProfile: true, lastActive: true, onlineStatus: true } }
+      helper: {
+        select: {
+          id: true,
+          lastActive: true,
+          whatsapp: true,
+          helperProfile: {
+            include: {
+              experienceDetails: { select: { value: true } },
+              workedCountries: { select: { value: true } },
+              personalityTraits: { select: { value: true } }
+            }
+          }
+        }
+      }
     },
     orderBy: { updatedAt: "desc" }
-  });
-  return res.json({ ok: true, bookmarks });
+  })) as unknown as BookmarkRow[];
+
+  const formatted = bookmarks
+    .filter((b) => b.helper?.helperProfile)
+    .map((b) => {
+      const helper = b.helper;
+      const online = isOnline(helper.lastActive, env.ONLINE_TTL_SECONDS);
+      let whatsapp: string | null = null;
+      try {
+        whatsapp = helper.whatsapp ? decryptString(helper.whatsapp) : null;
+      } catch {
+        whatsapp = null;
+      }
+
+      return {
+        ...b,
+        helper: {
+          id: helper.id,
+          online,
+          whatsapp,
+          profile: serializeHelperProfile(helper.helperProfile as HelperProfileApi)
+        }
+      };
+    });
+
+  return res.json({ ok: true, bookmarks: formatted });
 });
 
 employersRouter.delete("/me/bookmarks/:helperUserId", requireAuth, requireRole("EMPLOYER"), async (req, res) => {

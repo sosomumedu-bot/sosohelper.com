@@ -81,7 +81,7 @@ export default function Page() {
             <div key={job.id} className="rounded border p-4 bg-white shadow-sm hover:shadow-md transition-shadow">
               <div className="flex justify-between items-start mb-2">
                 <div>
-                  <h3 className="font-bold text-lg">{job.location} · {job.houseSize} House</h3>
+                  <h3 className="font-bold text-lg">{job.location} - {job.houseSize} House</h3>
                   <div className="text-xs text-slate-500">
                     Posted on {new Date(job.createdAt).toLocaleDateString()}
                   </div>

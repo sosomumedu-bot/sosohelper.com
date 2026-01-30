@@ -149,7 +149,7 @@ export default function Page() {
       {error ? <div className="text-sm text-red-600">{error}</div> : null}
 
       {loading ? (
-        <div className="text-center py-8 text-slate-500">Loading jobs…</div>
+        <div className="text-center py-8 text-slate-500">Loading jobs...</div>
       ) : filteredJobs.length === 0 ? (
         <div className="rounded border border-dashed p-8 text-center text-slate-500">
           <p>No jobs found.</p>
@@ -162,7 +162,7 @@ export default function Page() {
               <div className="flex justify-between items-start gap-3">
                 <div className="min-w-0">
                   <div className="font-bold text-lg truncate">
-                    {job.location} · {job.houseSize} House
+                    {job.location} - {job.houseSize} House
                   </div>
                   <div className="text-xs text-slate-500">
                     Posted on {new Date(job.createdAt).toLocaleDateString()}
@@ -206,4 +206,3 @@ export default function Page() {
     </main>
   );
 }
-

@@ -274,7 +274,7 @@ export function HelperProfileForm() {
         disabled={isSubmitting}
         className="w-full rounded bg-slate-900 px-4 py-3 text-white"
       >
-        {isSubmitting ? "Saving…" : "Save profile"}
+        {isSubmitting ? "Saving..." : "Save profile"}
       </button>
 
       {status ? <div className="text-sm">{status}</div> : null}

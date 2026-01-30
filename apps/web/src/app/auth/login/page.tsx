@@ -110,7 +110,7 @@ export default function LoginPage() {
           <input
             id="password"
             type="password"
-            placeholder="••••••••"
+            placeholder="********"
             className={`p-2 border rounded-md ${errors.password ? 'border-red-500' : 'border-slate-300'}`}
             {...register("password")}
           />
