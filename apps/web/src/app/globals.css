@@ -1,3 +1,78 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-background text-slate-900 antialiased;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-bold tracking-tight text-slate-900;
+  }
+}
+
+@layer components {
+  .glass-card {
+    @apply bg-white/80 backdrop-blur-md border border-white/20 shadow-soft;
+  }
+
+  .glass-nav {
+    @apply bg-white/90 backdrop-blur-lg border-t border-slate-100 shadow-soft;
+  }
+
+  .btn {
+    @apply inline-flex items-center justify-center rounded-2xl px-6 py-3 text-sm font-semibold transition-all focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none active:scale-[0.98];
+  }
+
+  .btn-primary {
+    @apply btn bg-primary text-white hover:bg-primary-600 shadow-md hover:shadow-lg;
+  }
+
+  .btn-secondary {
+    @apply btn bg-white text-slate-700 border border-slate-200 hover:bg-slate-50 shadow-sm;
+  }
+
+  .nav-item {
+    @apply flex flex-col items-center justify-center gap-1 text-slate-400 transition-all duration-300 hover:text-primary-500 relative;
+  }
+
+  .nav-item.active {
+    @apply text-primary-600 font-semibold;
+  }
+
+  .section-container {
+    @apply px-5 py-6 max-w-lg mx-auto;
+  }
+
+  .card-base {
+    @apply bg-white rounded-3xl border border-slate-100 shadow-soft overflow-hidden transition-all duration-300 hover:shadow-soft-lg active:scale-[0.99];
+  }
+
+  .input-base {
+    @apply block w-full rounded-2xl border-slate-200 bg-white px-4 py-3 text-slate-900 shadow-sm transition-all focus:border-primary-500 focus:ring-primary-500 sm:text-sm;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+  
+  .safe-top {
+    padding-top: env(safe-area-inset-top);
+  }
+  
+  .safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  .pt-safe {
+    padding-top: env(safe-area-inset-top);
+  }
+}

@@ -11,6 +11,18 @@ import {
   PERSONALITY_TRAITS
 } from "@sosohelper/shared";
 import { HelperCard } from "@/components/HelperCard";
+import { 
+  Search, 
+  Filter, 
+  ChevronDown, 
+  ChevronUp, 
+  Users, 
+  Globe, 
+  Clock, 
+  CheckCircle2,
+  AlertCircle,
+  Loader2
+} from "lucide-react";
 
 function toParamArray(v: string[]) {
   return v.length ? v.join(",") : undefined;
@@ -29,6 +41,7 @@ export default function Page() {
   const [bookmarkedSet, setBookmarkedSet] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showFilters, setShowFilters] = useState(false);
 
   const query = useMemo(() => {
     const params = new URLSearchParams();
@@ -134,109 +147,151 @@ export default function Page() {
   }
 
   return (
-    <main className="space-y-4">
-      <h1 className="text-xl font-bold">Search Helpers</h1>
-
-      <div className="space-y-3 rounded border p-3">
-        <div className="grid grid-cols-2 gap-3">
-          <div>
-            <div className="text-sm font-semibold">Country</div>
-            <select className="mt-1 w-full rounded border px-3 py-2" value={countryOfOrigin} onChange={(e) => setCountryOfOrigin(e.target.value)}>
-              <option value="">Any</option>
-              {COUNTRIES_OF_ORIGIN.map((c) => (
-                <option key={c} value={c}>
-                  {c}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <div className="text-sm font-semibold">Age</div>
-            <select className="mt-1 w-full rounded border px-3 py-2" value={ageRange} onChange={(e) => setAgeRange(e.target.value)}>
-              <option value="">Any</option>
-              {AGE_RANGES.map((a) => (
-                <option key={a} value={a}>
-                  {a}
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
-
-        <div>
-          <div className="text-sm font-semibold">Experience</div>
-          <select className="mt-1 w-full rounded border px-3 py-2" value={experienceYears} onChange={(e) => setExperienceYears(e.target.value)}>
-            <option value="">Any</option>
-            {EXPERIENCE_YEARS.map((y) => (
-              <option key={y} value={y}>
-                {y}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div>
-          <div className="text-sm font-semibold">Skills</div>
-          <div className="mt-2 grid grid-cols-2 gap-2">
-            {EXPERIENCE_DETAILS.map((s) => (
-              <button
-                key={s}
-                type="button"
-                className={
-                  experienceDetails.includes(s)
-                    ? "rounded border bg-slate-900 px-3 py-2 text-sm text-white"
-                    : "rounded border px-3 py-2 text-sm"
-                }
-                onClick={() => toggle(experienceDetails, s, setExperienceDetails)}
-              >
-                {s}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <div>
-          <div className="text-sm font-semibold">Personality</div>
-          <div className="mt-2 grid grid-cols-2 gap-2">
-            {PERSONALITY_TRAITS.map((t) => (
-              <button
-                key={t}
-                type="button"
-                className={
-                  personalityTraits.includes(t)
-                    ? "rounded border bg-slate-900 px-3 py-2 text-sm text-white"
-                    : "rounded border px-3 py-2 text-sm"
-                }
-                onClick={() => toggle(personalityTraits, t, setPersonalityTraits)}
-              >
-                {t}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <label className="flex items-center gap-2 text-sm">
-          <input type="checkbox" checked={onlineOnly} onChange={(e) => setOnlineOnly(e.target.checked)} />
-          Online only
-        </label>
-
-        <button type="button" className="w-full rounded bg-slate-900 px-4 py-3 text-white" onClick={search}>
-          Search
+    <main className="max-w-4xl mx-auto px-4 py-6 space-y-6">
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
+          <Users className="w-6 h-6 text-pink-500" />
+          Find Your Helper
+        </h1>
+        <button 
+          onClick={() => setShowFilters(!showFilters)}
+          className="lg:hidden p-2 text-slate-600 hover:bg-slate-100 rounded-full transition-colors"
+          aria-label="Toggle filters"
+        >
+          <Filter className="w-5 h-5" />
         </button>
-
-        {error ? <div className="text-sm text-red-600">{error}</div> : null}
       </div>
 
-      <div className="space-y-3">
+      <div className={`bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden transition-all duration-300 ${showFilters ? 'block' : 'hidden lg:block'}`}>
+        <div className="p-5 space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-slate-700 flex items-center gap-2">
+                <Globe className="w-4 h-4 text-slate-400" />
+                Country of Origin
+              </label>
+              <select 
+                className="w-full h-11 rounded-xl border-slate-200 bg-slate-50 px-3 text-sm focus:ring-2 focus:ring-pink-500 focus:border-transparent outline-none transition-all" 
+                value={countryOfOrigin} 
+                onChange={(e) => setCountryOfOrigin(e.target.value)}
+                aria-label="Country of Origin"
+              >
+                <option value="">Any Country</option>
+                {COUNTRIES_OF_ORIGIN.map((c: string) => (
+                  <option key={c} value={c}>{c}</option>
+                ))}
+              </select>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-slate-700 flex items-center gap-2">
+                <Users className="w-4 h-4 text-slate-400" />
+                Age Range
+              </label>
+              <select 
+                className="w-full h-11 rounded-xl border-slate-200 bg-slate-50 px-3 text-sm focus:ring-2 focus:ring-pink-500 focus:border-transparent outline-none transition-all" 
+                value={ageRange} 
+                onChange={(e) => setAgeRange(e.target.value)}
+                aria-label="Age Range"
+              >
+                <option value="">Any Age</option>
+                {AGE_RANGES.map((a: string) => (
+                  <option key={a} value={a}>{a}</option>
+                ))}
+              </select>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-slate-700 flex items-center gap-2">
+                <Clock className="w-4 h-4 text-slate-400" />
+                Experience
+              </label>
+              <select 
+                className="w-full h-11 rounded-xl border-slate-200 bg-slate-50 px-3 text-sm focus:ring-2 focus:ring-pink-500 focus:border-transparent outline-none transition-all" 
+                value={experienceYears} 
+                onChange={(e) => setExperienceYears(e.target.value)}
+                aria-label="Experience Years"
+              >
+                <option value="">Any Experience</option>
+                {EXPERIENCE_YEARS.map((y: string) => (
+                  <option key={y} value={y}>{y}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          <div className="space-y-3">
+            <label className="text-sm font-medium text-slate-700 flex items-center gap-2">
+              <CheckCircle2 className="w-4 h-4 text-slate-400" />
+              Required Skills
+            </label>
+            <div className="flex flex-wrap gap-2">
+              {EXPERIENCE_DETAILS.map((s: string) => (
+                <button
+                  key={s}
+                  type="button"
+                  onClick={() => toggle(experienceDetails, s, setExperienceDetails)}
+                  className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                    experienceDetails.includes(s)
+                      ? "bg-pink-100 text-pink-700 ring-2 ring-pink-500 ring-inset"
+                      : "bg-slate-50 text-slate-600 hover:bg-slate-100 border border-slate-200"
+                  }`}
+                >
+                  {s}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="flex items-center justify-between pt-4 border-t border-slate-100">
+            <label className="relative inline-flex items-center cursor-pointer">
+              <input 
+                type="checkbox" 
+                checked={onlineOnly} 
+                onChange={(e) => setOnlineOnly(e.target.checked)} 
+                className="sr-only peer"
+              />
+              <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-pink-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-pink-500"></div>
+              <span className="ml-3 text-sm font-medium text-slate-700">Online only</span>
+            </label>
+
+            <button 
+              type="button" 
+              className="px-8 py-3 bg-slate-900 hover:bg-slate-800 text-white rounded-xl font-semibold flex items-center gap-2 transition-all shadow-lg shadow-slate-200 active:scale-95 disabled:opacity-50 disabled:active:scale-100"
+              onClick={search}
+              disabled={loading}
+            >
+              {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Search className="w-5 h-5" />}
+              Search
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {error && (
+        <div className="bg-red-50 border border-red-200 rounded-xl p-4 flex items-center gap-3 text-red-700">
+          <AlertCircle className="w-5 h-5 flex-shrink-0" />
+          <span className="text-sm font-medium">{error}</span>
+        </div>
+      )}
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {loading ? (
-          <div className="text-center py-8 text-slate-500">Loading helpers...</div>
+          Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="bg-white rounded-2xl h-80 animate-pulse border border-slate-100" />
+          ))
         ) : helpers.length === 0 ? (
-          <div className="rounded border border-dashed p-8 text-center text-slate-500">
-            <p>No helpers found matching your criteria.</p>
-            <p className="text-xs mt-1">Try adjusting the filters.</p>
+          <div className="col-span-full py-20 bg-slate-50 rounded-3xl border-2 border-dashed border-slate-200 text-center space-y-3">
+            <div className="bg-white w-16 h-16 rounded-full flex items-center justify-center mx-auto shadow-sm">
+              <Search className="w-8 h-8 text-slate-300" />
+            </div>
+            <div className="space-y-1">
+              <p className="text-slate-900 font-semibold text-lg">No helpers found</p>
+              <p className="text-slate-500 text-sm max-w-xs mx-auto">Try broadening your search criteria or checking for online users.</p>
+            </div>
           </div>
         ) : (
-          helpers.map((h) => (
+          helpers.map((h: any) => (
             <HelperCard
               key={h.id}
               helper={h}

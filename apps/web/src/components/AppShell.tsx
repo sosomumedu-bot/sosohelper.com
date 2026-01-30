@@ -1,153 +1,132 @@
 "use client";
 
-import clsx from "clsx";
+import React, { useState } from "react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
-import { apiFetch } from "@/lib/api";
-
-type Role = "HELPER" | "EMPLOYER";
-type StoredUser = { id: string; role: Role };
-
-function parseStoredUser(raw: string | null): StoredUser | null {
-  if (!raw) return null;
-  try {
-    const parsed = JSON.parse(raw) as unknown;
-    if (
-      typeof parsed === "object" &&
-      parsed !== null &&
-      "id" in parsed &&
-      "role" in parsed &&
-      typeof (parsed as any).id === "string" &&
-      ((parsed as any).role === "HELPER" || (parsed as any).role === "EMPLOYER")
-    ) {
-      return { id: (parsed as any).id, role: (parsed as any).role };
-    }
-    return null;
-  } catch {
-    return null;
-  }
-}
-
-function clearAuth() {
-  localStorage.removeItem("token");
-  localStorage.removeItem("user");
-}
-
-function isAuthErrorMessage(message: unknown): boolean {
-  if (typeof message !== "string") return false;
-  return message.includes("Invalid token") || message.includes("Missing bearer token");
-}
+import { usePathname } from "next/navigation";
+import clsx from "clsx";
+import { 
+  Search, 
+  Bookmark, 
+  User, 
+  Menu, 
+  X, 
+  Home,
+  ChevronRight
+} from "lucide-react";
 
 export function AppShell({ children }: { children: React.ReactNode }) {
-  const router = useRouter();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const pathname = usePathname();
-  const [token, setToken] = useState<string | null>(null);
-  const [user, setUser] = useState<StoredUser | null>(null);
 
-  useEffect(() => {
-    setToken(localStorage.getItem("token"));
-    setUser(parseStoredUser(localStorage.getItem("user")));
-  }, [pathname]);
+  const navLinks = [
+    { href: "/", label: "Browse Helpers", icon: Search },
+    { href: "/bookmarks", label: "Bookmarks", icon: Bookmark },
+  ];
 
-  useEffect(() => {
-    if (!token) return;
-
-    const ping = async () => {
-      try {
-        await apiFetch<{ ttlSeconds: number }>("/presence/heartbeat", { method: "POST", token });
-      } catch (e: any) {
-        if (isAuthErrorMessage(e?.message)) {
-          clearAuth();
-          setToken(null);
-          setUser(null);
-          if (!pathname.startsWith("/auth")) router.push("/auth/login");
-        }
-      }
-    };
-
-    ping();
-    const intervalId = setInterval(ping, 45_000);
-    return () => clearInterval(intervalId);
-  }, [pathname, router, token]);
-
-  const navItems = useMemo(() => {
-    if (user?.role === "EMPLOYER") {
-      return [
-        { href: "/employer/search", label: "Search Helpers" },
-        { href: "/employer/jobs", label: "My Jobs" },
-        { href: "/employer/bookmarks", label: "Bookmarks" }
-      ];
-    }
-    if (user?.role === "HELPER") {
-      return [
-        { href: "/helper/profile", label: "My Profile" },
-        { href: "/helper/jobs", label: "Browse Jobs" }
-      ];
-    }
-    return [];
-  }, [user?.role]);
-
-  function logout() {
-    clearAuth();
-    setToken(null);
-    setUser(null);
-    router.push("/");
-  }
-
-  const isActive = (href: string) => pathname === href || pathname.startsWith(`${href}/`);
+  const isActive = (path: string) => pathname === path;
 
   return (
-    <>
-      <header className="mb-4 rounded border bg-white">
-        <div className="flex items-center justify-between px-3 py-2">
-          <Link href="/" className="font-bold">
-            SosoHelper
-          </Link>
+    <div className="min-h-screen bg-slate-50/50 flex flex-col font-sans antialiased text-slate-900">
+      {/* Header */}
+      <header className="sticky top-0 z-40 w-full border-b bg-white/80 backdrop-blur-md">
+        <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Link href="/" className="flex items-center gap-2 transition-opacity hover:opacity-80">
+              <div className="w-9 h-9 bg-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-200">
+                <span className="text-white font-bold text-xl">S</span>
+              </div>
+              <h1 className="font-bold text-xl tracking-tight hidden sm:block">SosoHelper</h1>
+            </Link>
+          </div>
 
-          {user ? (
-            <div className="flex items-center gap-2 text-xs text-slate-600">
-              <span className="rounded bg-slate-100 px-2 py-1">{user.role}</span>
-              <button
-                type="button"
-                onClick={logout}
-                className="rounded px-2 py-1 hover:bg-slate-100"
-              >
-                Logout
-              </button>
-            </div>
-          ) : (
-            <div className="flex items-center gap-2 text-sm">
-              <Link href="/auth/login" className="text-slate-700 hover:underline">
-                Log In
-              </Link>
-              <Link href="/auth/signup" className="rounded bg-blue-600 px-3 py-1.5 text-white">
-                Sign Up
-              </Link>
-            </div>
-          )}
-        </div>
-
-        {navItems.length ? (
-          <nav className="flex gap-1 border-t px-1 py-1">
-            {navItems.map((item) => (
+          {/* Desktop Nav */}
+          <nav className="hidden md:flex items-center gap-1">
+            {navLinks.map((link) => (
               <Link
-                key={item.href}
-                href={item.href}
+                key={link.href}
+                href={link.href}
                 className={clsx(
-                  "flex-1 rounded px-3 py-2 text-center text-sm",
-                  isActive(item.href) ? "bg-slate-900 text-white" : "text-slate-700 hover:bg-slate-50"
+                  "px-4 py-2 rounded-full text-sm font-medium transition-all",
+                  isActive(link.href)
+                    ? "bg-indigo-50 text-indigo-600"
+                    : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
                 )}
               >
-                {item.label}
+                {link.label}
               </Link>
             ))}
+            <div className="w-px h-4 bg-slate-200 mx-2" />
+            <Link 
+              href="/login" 
+              className="ml-2 px-5 py-2 rounded-full bg-slate-900 text-white text-sm font-medium hover:bg-slate-800 transition-all active:scale-95 shadow-md shadow-slate-200"
+            >
+              Login
+            </Link>
           </nav>
-        ) : null}
+
+          {/* Mobile Menu Button */}
+          <button 
+            className="md:hidden p-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+          >
+            {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+          </button>
+        </div>
       </header>
 
-      {children}
-    </>
+      {/* Mobile Menu Overlay */}
+      {isMobileMenuOpen && (
+        <div className="fixed inset-0 z-30 md:hidden bg-white pt-20 px-4">
+          <nav className="flex flex-col gap-2">
+            {navLinks.map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                onClick={() => setIsMobileMenuOpen(false)}
+                className={clsx(
+                  "flex items-center justify-between p-4 rounded-2xl text-lg font-medium transition-all",
+                  isActive(link.href)
+                    ? "bg-indigo-50 text-indigo-600"
+                    : "text-slate-600 active:bg-slate-50"
+                )}
+              >
+                <div className="flex items-center gap-3">
+                  <link.icon size={20} />
+                  {link.label}
+                </div>
+                <ChevronRight size={18} className="opacity-40" />
+              </Link>
+            ))}
+            <Link
+              href="/login"
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="mt-4 flex items-center justify-center p-4 rounded-2xl bg-slate-900 text-white font-bold text-lg"
+            >
+              Login
+            </Link>
+          </nav>
+        </div>
+      )}
+
+      {/* Main Content */}
+      <main className="flex-1 w-full max-w-6xl mx-auto px-4 py-8">
+        {children}
+      </main>
+
+      {/* Footer */}
+      <footer className="border-t bg-white mt-auto py-10">
+        <div className="max-w-6xl mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-6 text-sm text-slate-500">
+          <div className="flex items-center gap-3">
+            <div className="w-6 h-6 bg-slate-100 rounded flex items-center justify-center text-[10px] font-bold text-slate-400">SH</div>
+            <span>&copy; 2024 SosoHelper. All rights reserved.</span>
+          </div>
+          <div className="flex gap-8">
+            <Link href="#" className="hover:text-indigo-600 transition-colors">Terms</Link>
+            <Link href="#" className="hover:text-indigo-600 transition-colors">Privacy</Link>
+            <Link href="#" className="hover:text-indigo-600 transition-colors">Contact</Link>
+          </div>
+        </div>
+      </footer>
+    </div>
   );
 }
-
