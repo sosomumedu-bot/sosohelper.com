@@ -11,3 +11,4 @@ apps/api/prisma/dev.db-journal
 apps/miniapp/dist
 apps/mobile/.expo
 /.git.bak-*/
+.git.bak*/
